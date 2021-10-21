@@ -11,12 +11,8 @@
     hello world.
 </body>
 <script type="module">
-    import { ManageDateClass } from "./class-statement.js";
-    import { ManageDateClosure } from "./closure-statement.js";
-    const date1 = new ManageDateClass(new Date());
-    const date2 = ManageDateClosure(new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
-    console.log(date1.date);
-    console.log(date2.getDate());
+    import dayjs from './SigDayjs.mjs';
+    console.log(dayjs);
 </script>
 
 </html>
