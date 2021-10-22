@@ -1,5 +1,5 @@
 'use strict';
-
+import U from './Utils.mjs'
 // import { ManageDateClass } from "./class-statement.mjs";
 // import { ManageDateClosure } from "./closure-statement.mjs";
 
@@ -24,9 +24,7 @@ class SigDayjs {
         this.$m = this.$d.getMinutes();
         this.$s = this.$d.getSeconds();
         this.$ms = this.$d.getMilliseconds();
-
-        // 実行成功
-        return true;
+        return this;
     }
     clone() {
         return new SigDayjs(this.$d);
@@ -35,28 +33,29 @@ class SigDayjs {
         return this.$d;
     }
     year(yearNum) {
-        return yearNum && this.init(this.$d.setFullYear(yearNum)) && this || this.$y;
+        return yearNum && this.clone().init(this.clone().$d.setFullYear(yearNum)) || this.$y;
     }
     month(monthNum) {
-        return monthNum && this.init(this.$d.setMonth(monthNum)) && this || this.$M;
+        // 注意！ 引数あり時（Setterとして動作）はmutableではなくimmutableとして実装
+        return monthNum && this.clone().init(this.clone().$d.setMonth(monthNum)) || this.$M;
     }
     date(dateNum) {
-        return dateNum && this.init(this.$d.setDate(dateNum)) && this || this.$D;
+        return dateNum && this.clone().init(this.clone().$d.setDate(dateNum)) || this.$D;
     }
     day() {
         return this.$W;
     }
     hour(hourNum) {
-        return hourNum && this.init(this.$d.setHours(hourNum)) && this || this.$H;
+        return hourNum && this.clone().init(this.clone().$d.setHours(hourNum)) || this.$H;
     }
-    minutes(minNum) {
-        return minNum && this.init(this.$d.setMinutes(minNum)) && this || this.$m;
+    minute(minNum) {
+        return minNum && this.clone().init(this.clone().$d.setMinutes(minNum)) || this.$m;
     }
     second(secNum) {
-        return secNum && this.init(this.$d.setSeconds(secNum)) && this || this.$s;
+        return secNum && this.clone().init(this.clone().$d.setSeconds(secNum)) || this.$s;
     }
     millisecond(msNum) {
-        return msNum && this.init(this.$d.setMilliseconds(msNum)) && this || this.$ms;
+        return msNum && this.clone().init(this.clone().$d.setMilliseconds(msNum)) || this.$ms;
     }
     format(formatStr) {
         /* 対応済みフォーマット（例：2021年9月1日水曜なら）
@@ -112,29 +111,7 @@ class SigDayjs {
          * second      s  <= Second
          * millisecond ms <= Millisecond
          */
-        const convertToShorthand = unit => {
-            // 長いunitから短いunit（ショートハンド）へと変換する（逆だとNG）
-            const alias = {
-                day: "d",
-                week: "w",
-                month: "M",
-                quarter: "Q",
-                year: "y",
-                hour: "h",
-                minute: "m",
-                second: "s",
-                millisecond: "ms"
-            }
-            // formatのような「部分変換」ではなく「完全変換」なので、
-            // millisecondとsecondの誤変換を気にしてキー文字列長降順ソートする必要はない
-            unit = Object.keys(alias).reduce((previous, current) => {
-                // unitとキーが一致しないなら、reduceとして実行しているのでもう一度unitを返却しないとバグが生じる
-                return previous === current && alias[current] || previous;
-            }, unit);
-            // ここが関数定義内であることを忘れないように...（製造中に忘れていたことに気付かなかったため覚書）
-            return unit;
-        };
-        unit = convertToShorthand(unit);
+        unit = U.convertToShorthand(unit);
 
         // 増分msを算出し、addしたdayjsオブジェクトを返却する関数をunitごとに定義 ※immutable
         const addFunc = {
@@ -170,6 +147,63 @@ class SigDayjs {
             "ms": num => new SigDayjs(this.$d - 0 + num)
         }
         return addFunc[unit](num);
+    }
+    /**
+     * thisからtoDayjsまでの日時差分を取得する（this - toDayjs）。
+     * 第一引数のみの指定なら、差分はミリ秒。
+     * 第二引数を指定すれば、単位の指定可能。
+     * 第三引数を指定すれば、単位指定時の小数点を切り捨てるかどうかを制御できる。
+     * 
+     * @param toDayjs 本家dayjsオブジェクト or SigDayjsオブジェクト
+     * @param unit 単位指定
+     * @param shouldFloor 小数点切り捨て制御
+     */
+    diff(toDayjs, unit, shouldFloor) {
+
+        /* 対応するunit（単位）
+         * day	       d  <= Day
+         * week        w  <= Week
+         * month       M  <= Month
+         * quarter     Q  <= Quarter
+         * year	       y  <= Year
+         * hour	       h  <= Hour
+         * minute      m  <= Minute
+         * second      s  <= Second
+         * millisecond ms <= Millisecond
+         */
+        unit = U.convertToShorthand(unit);
+
+        const from = this.toDate();
+        const to = toDayjs.toDate();
+        const diff = from - to;
+
+        return {
+            "d": diff / 1000 / 60 / 60 / 24,
+            "w": diff / 1000 / 60 / 60 / 24 / 7,
+            "M": U.monthDiff(this, toDayjs),
+            "Q": diff,
+            "y": diff,
+            "h": diff / 1000 / 60 / 60,
+            "m": diff / 1000 / 60,
+            "s": diff / 1000,
+            "ms": diff,
+        }[unit] || diff;
+    }
+    /**
+     * 文字列型への暗黙的な型変換で使う。
+     * Object.prototype.toString() のオーバーライド
+     * @returns UTCString
+     */
+    toString() {
+        return this.$d.toUTCString();
+    }
+    /**
+     * 減算時などプリミティブな値への暗黙的な型変換で使う。
+     * Object.prototype.valueOf() のオーバーライド
+     * @returns DateオブジェクトのgetTime()
+     */
+    valueOf() {
+        return this.$d-0;
     }
 }
 
