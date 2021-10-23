@@ -135,7 +135,7 @@ const assert = (original, sig) => {
         ...new Array((new Date('2025-10-23 06:00:00') - new Date('2021-10-22 06:00:00')) / 1000 / 60 / 60 / 24)
     ].map(
         (e, i) => new Date(
-            new Date('2021-10-23').getTime() + i * 24 * 60 * 60 * 1000
+            new Date('2021-10-23 06:00:00').getTime() + i * 24 * 60 * 60 * 1000
         )
     );
     let failedCount = 0;
