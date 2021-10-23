@@ -146,9 +146,9 @@ class SigDayjs {
              */
             "d": num => new SigDayjs(this.$d - 0 + num * 1000 * 60 * 60 * 24),
             "w": num => new SigDayjs(this.$d - 0 + num * 1000 * 60 * 60 * 24 * 7),
-            "M": num => new SigDayjs(this.$d - 0 + new Date(this.$d).setMonth(this.$d.getMonth() + num) - new Date(this.$d)),
-            "Q": num => new SigDayjs(this.$d - 0 + new Date(this.$d).setMonth(this.$d.getMonth() + num * 3) - new Date(this.$d)),
-            "y": num => new SigDayjs(this.$d - 0 + new Date(this.$d).setFullYear(this.$d.getFullYear() + num) - new Date(this.$d)),
+            "M": num => new SigDayjs(new Date(this.$d).setMonth(this.$d.getMonth() + num)),
+            "Q": num => new SigDayjs(new Date(this.$d).setMonth(this.$d.getMonth() + num * 3)),
+            "y": num => new SigDayjs(new Date(this.$d).setFullYear(this.$d.getFullYear() + num)),
             "h": num => new SigDayjs(this.$d - 0 + num * 1000 * 60 * 60),
             "m": num => new SigDayjs(this.$d - 0 + num * 1000 * 60),
             "s": num => new SigDayjs(this.$d - 0 + num * 1000),
@@ -160,13 +160,11 @@ class SigDayjs {
      * thisからtoDayjsまでの日時差分を取得する（this - toDayjs）。
      * 第一引数のみの指定なら、差分はミリ秒。
      * 第二引数を指定すれば、単位の指定可能。
-     * 第三引数を指定すれば、単位指定時の小数点を算出するかどうか制御できる（falsyなら切り捨て）
      * 
      * @param toDayjs 本家dayjsオブジェクト or SigDayjsオブジェクト
      * @param unit 単位指定
-     * @param float 小数点を算出するかどうか（falsyなら切り捨て）
      */
-    diff(toDayjs, unit, float) {
+    diff(toDayjs, unit) {
 
         /* 対応するunit（単位）
          * day	       d  <= Day
@@ -188,9 +186,9 @@ class SigDayjs {
         return {
             "d": diff / 1000 / 60 / 60 / 24,
             "w": diff / 1000 / 60 / 60 / 24 / 7,
-            "M": !float && Math.floor(U.monthDiff(this, toDayjs)) || U.monthDiff(this, toDayjs),
-            "Q": !float && Math.floor(U.monthDiff(this, toDayjs) / 3) || U.monthDiff(this, toDayjs) / 3,
-            "y": !float && Math.floor(U.monthDiff(this, toDayjs) / 12) || U.monthDiff(this, toDayjs) / 12,
+            "M": undefined, // 未対応
+            "Q": undefined, // 未対応
+            "y": undefined, // 未対応
             "h": diff / 1000 / 60 / 60,
             "m": diff / 1000 / 60,
             "s": diff / 1000,
