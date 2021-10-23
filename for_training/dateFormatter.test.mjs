@@ -1,3 +1,4 @@
+'use strict';
 import DateFormatter from './dateFormatter.mjs';
 
 console.assert(

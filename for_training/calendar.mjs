@@ -1,14 +1,15 @@
-import e from "express";
+'use strict';
 import DateFormatter from "./dateFormatter.mjs"
+import U from "./Utils.mjs";
 
 // 2021年11月のカレンダーを作成する
 
 // 2021年11月1日から2021年11月30日までを格納した配列
 const novemberDateList = [...new Array(
     /* 何日あるかを算出 */
-    (new Date("2021-12-01") - new Date("2021-11-01")) / 1000 / 60 / 60 / 24
+    (new Date(...U.s("2021-12-01")) - new Date(...U.s("2021-11-01"))) / 1000 / 60 / 60 / 24
 )].map((e, i) => {
-    return new Date(new Date("2021-11-01").getTime() + i * 24 * 60 * 60 * 1000)
+    return new Date(new Date(...U.s("2021-11-01")).getTime() + i * 24 * 60 * 60 * 1000)
 });
 
 const dateListToStr = dateList => dateList.reduce(

@@ -1,3 +1,4 @@
+'use strict';
 import result from "./calendar.mjs";
 console.assert(result === `[
     [
