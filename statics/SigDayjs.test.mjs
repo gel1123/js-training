@@ -90,9 +90,17 @@ const useDiff = dayjs => {
     dateFrom.diff(dateTo, 'M', true) => ${dateFrom.diff(dateTo, 'M', true)}
     dateFrom.diff(dateTo, 'M', false) => ${dateFrom.diff(dateTo, 'M', false)}
     `
-    writeLog(r);
     return r;
 }
+const useDiff2 = (dayjs, e) => (`
+                [
+                    19年2月28日 との差分：${(dayjs('2019-02-28 06:00:00').diff(dayjs(e), 'M', true))},
+                    20年2月29日 との差分：${(dayjs('2020-02-29 06:00:00').diff(dayjs(e), 'M', true))},
+                    20年4月30日 との差分：${(dayjs('2020-04-30 06:00:00').diff(dayjs(e), 'M', true))},
+                    20年5月31日 との差分：${(dayjs('2020-05-31 06:00:00').diff(dayjs(e), 'M', true))},
+                    21年10月23日との差分：${(dayjs('2021-10-23 06:00:00').diff(dayjs(e), 'M', true))},
+                ]
+`);
 const assert = (original, sig) => {
     const anyday = new Date();
 
@@ -119,6 +127,32 @@ const assert = (original, sig) => {
     const resultOriginalDiff = useDiff(original);
     const resultSigDiff = useDiff(sig);
     console.assert(resultOriginalDiff === resultSigDiff, "オリジナルと異なる出力がされました");
+    console.log('------------------------------------------------------------');
+
+    // 2021-10-23 から 2025-10-23 までの全ての日付を格納した配列に対してテストを行う
+    const allDate = [
+        /* 2021-10-23から配列に含めたいので、ループする回数の算出には【その前日】から最終日までの差異を使う */
+        ...new Array((new Date('2025-10-23 06:00:00') - new Date('2021-10-22 06:00:00')) / 1000 / 60 / 60 / 24)
+    ].map(
+        (e, i) => new Date(
+            new Date('2021-10-23').getTime() + i * 24 * 60 * 60 * 1000
+        )
+    );
+    let failedCount = 0;
+    allDate.forEach(e =>{
+        const resultOriginal = useDiff2(original, e);
+        const resultSig = useDiff2(sig, e);
+        console.assert(resultOriginal === resultSig, `
+            オリジナルと異なる出力がされました。
+            {
+                対象日付：${sig(e).format("YY年M月D日")},
+                オリジナルの出力：${resultOriginal},
+                Sigの出力：${resultSig}
+            }
+        `)
+        failedCount = resultOriginal === resultSig ? failedCount : failedCount+1;
+    });
+    console.assert(failedCount === 0, `useDiff2テストで${failedCount}件のNGがあります（テストは全部で${allDate.length}件あります）`);
     console.log('------------------------------------------------------------');
 };
 assert(origindayjs, sigDayjs);
