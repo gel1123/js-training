@@ -75,7 +75,11 @@ class SigDayjs {
             M: this.$M + 1, // 注意！プラス1忘れると月がずれる
             DD: this.$D > 9 && this.$D || '0' + this.$D,
             D: this.$D,
+
+            /* 注意！下記「Mo」の「M」が「月」として変換されないようにすべき。よってddとdは最後にフォーマットすべき */
             dd: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'][this.$W - 1 < 0 && 6 || this.$W - 1], // 注意！マイナス1忘れると配列要素がずれて曜日がおかしくなる
+
+
             d: this.$W
         }
 
@@ -85,10 +89,14 @@ class SigDayjs {
 
         // 長いパターンの優先度が高いことを利用したいので、キーを文字列長の降順ソートする
         const sortedKeys = Object.keys(matches).sort((e1, e2) => e2.length - e1.length);
-        // 長いパターンから変換していく
-        sortedKeys.forEach(e => {
+        // 長いパターンから変換していく（ただしddとdは上述の理由により最後に実行）
+        sortedKeys.filter(e => e !== 'dd' && e !== 'd').forEach(e => {
             formatStr = formatStr.replace(e, matches[e]);
         });
+        sortedKeys.filter(e => e === 'dd' || e === 'd').forEach(e => {
+            formatStr = formatStr.replace(e, matches[e]);
+        });
+
         return formatStr;
     }
     add(num, unit) {
@@ -152,13 +160,13 @@ class SigDayjs {
      * thisからtoDayjsまでの日時差分を取得する（this - toDayjs）。
      * 第一引数のみの指定なら、差分はミリ秒。
      * 第二引数を指定すれば、単位の指定可能。
-     * 第三引数を指定すれば、単位指定時の小数点を切り捨てるかどうかを制御できる。
+     * 第三引数を指定すれば、単位指定時の小数点を算出するかどうか制御できる（falsyなら切り捨て）
      * 
      * @param toDayjs 本家dayjsオブジェクト or SigDayjsオブジェクト
      * @param unit 単位指定
-     * @param shouldFloor 小数点切り捨て制御
+     * @param float 小数点を算出するかどうか（falsyなら切り捨て）
      */
-    diff(toDayjs, unit, shouldFloor) {
+    diff(toDayjs, unit, float) {
 
         /* 対応するunit（単位）
          * day	       d  <= Day
@@ -180,9 +188,9 @@ class SigDayjs {
         return {
             "d": diff / 1000 / 60 / 60 / 24,
             "w": diff / 1000 / 60 / 60 / 24 / 7,
-            "M": U.monthDiff(this, toDayjs),
-            "Q": diff,
-            "y": diff,
+            "M": !float && Math.floor(U.monthDiff(this, toDayjs)) || U.monthDiff(this, toDayjs),
+            "Q": !float && Math.floor(U.monthDiff(this, toDayjs) / 3) || U.monthDiff(this, toDayjs) / 3,
+            "y": !float && Math.floor(U.monthDiff(this, toDayjs) / 12) || U.monthDiff(this, toDayjs) / 12,
             "h": diff / 1000 / 60 / 60,
             "m": diff / 1000 / 60,
             "s": diff / 1000,
@@ -203,7 +211,7 @@ class SigDayjs {
      * @returns DateオブジェクトのgetTime()
      */
     valueOf() {
-        return this.$d-0;
+        return this.$d - 0;
     }
 }
 
