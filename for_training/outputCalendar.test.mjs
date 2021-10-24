@@ -1,5 +1,5 @@
 'use strict';
-import result from "./calendar.mjs";
+import result from "./outputCalendar.mjs";
 console.assert(result === `[
     [
         "11/1(月)",

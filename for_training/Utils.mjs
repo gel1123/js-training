@@ -11,7 +11,30 @@ const spreadISO8601 = (
     )
 );
 
+const cut = (arr, index) => [
+    arr.slice(0, index),
+    arr.slice(index)
+]
+
+const cut2 = (arr, ...index) => {
+    // スプレッド構文の引数だから、indexがArrayであることは保証されている
+    // （もし...indexに配列以外の値を入れたとしても、自動的に「配列内の一要素」に変換される）
+
+    const result = [];
+    for (let i = 0; i < index.length; i++) {
+        const previous = i === 0 ? 0 : index[i - 1]
+        const current = index[i]
+        result.push(arr.slice(previous, current))
+    }
+    if (index[index.length-1]<arr.length-1) {
+        result.push(arr.slice(index[index.length]));
+    }
+    return result;
+}
+
+
 export default {
-    s: spreadISO8601
+    s: spreadISO8601,
+    c: cut
 }
 
