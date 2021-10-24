@@ -111,11 +111,28 @@ class SigCalendar {
         const result = [];
         let week = undefined;
         this.allDateInfo.forEach((dateInfo, index) => {
+
+            if (result.length === 1 && result[0].length < 7) {
+                // 最初の週は長さ7に足りない分を先頭からundefined埋めする
+                // [1,2,3] => [u,u,u,u,1,2,3]
+                //  0 1 2      0 1 2 3 4 5 6
+                const firstWeek = result[0];
+                result[0] = [...new Array(7)].map((e, i) => firstWeek[firstWeek.length - 7 + i]);
+            }
+
             week = week || [];
             week.push(dateInfo);
 
-            // resultに格納されている配列（week）の数で、今が何周目かを記録していく
-            dateInfo.setNth(result.length + 1)
+            // 1周目：resultに格納されている配列（week）の数で、今が何周目かを記録していく
+            if (result.length === 0) {
+                dateInfo.setNth(result.length + 1);
+            } else if (result[0][dateInfo.$W]) {
+                // 1周目に同じ曜日が存在するなら...
+                dateInfo.setNth(result.length + 1);
+            } else {
+                // 上記以外なら...
+                dateInfo.setNth(result.length + 1 - 1);
+            }
 
             // その日が休日かどうかを設定する
             this.checkHoliday(dateInfo);
@@ -134,11 +151,6 @@ class SigCalendar {
                 result.push(week);
             }
         });
-        // 最初の週は長さ7に足りない分を先頭からundefined埋めする
-        // [1,2,3] => [u,u,u,u,1,2,3]
-        //  0 1 2      0 1 2 3 4 5 6
-        const firstWeek = result[0];
-        result[0] = [...new Array(7)].map((e, i) => firstWeek[firstWeek.length - 7 + i]);
 
         // 最後の週は長さ7に足りない分を末尾からundefined埋めする
         // [1,2,3] => [1,2,3,u,u,u,u]
