@@ -50,8 +50,19 @@ class SigCalendar {
      * @param startDayOfWeek 何曜日始まりのカレンダーかを数値で指定する
      */
     constructor(calendarYear, calendarMonth, startDayOfWeek) {
-        const startDate = new Date(calendarYear, calendarMonth, 0);
-        const endDate = new Date(calendarYear, calendarMonth === 12 ? 0 : calendarMonth + 1, 0);
+        /***************************************
+         * 注意！
+         * -----------------------
+         * 日付を指定したくないからといって、new Date(YYYY, M, D)形式で 
+         * new Date(2021, 11, 0)
+         * なんて書いてはいけない。
+         * 日付を指定なしと同じにするなら、月の初日なので、ゼロではなく「1」が正しい。
+         * なので new Date(2021, 11, 1) か、
+         * あるいは素直に new Date(2021, 11)とすべき
+         * 
+         ***************************************/
+        const startDate = new Date(calendarYear, calendarMonth);
+        const endDate = new Date(calendarYear, calendarMonth === 12 ? 0 : calendarMonth + 1);
         this.startDate = startDate;
         this.endDate = endDate;
 
